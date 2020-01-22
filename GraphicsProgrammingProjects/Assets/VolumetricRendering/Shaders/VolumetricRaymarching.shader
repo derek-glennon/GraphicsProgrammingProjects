@@ -67,7 +67,25 @@
 
 			float3 map(float3 pos)
 			{
-				return SDF_SolidAngle(pos, float2(1, 1), 1);
+				//return SDF_Quad(pos, float3(1, 0, 0), float3(0, 1, 0), float3(0, 0, 1), float3(0, 0, 1));
+
+				//return SDF_Triangle(pos, float3(1, 0, 0), float3(0, 1, 0), float3(0, 0, 1));
+
+				//return SDF_Pyramid(pos, 1);
+
+				//return SDF_Octahedron(pos, 2);
+
+				//return SDF_Link(pos, .5, 1.5, .5);
+
+				//return SDF_CappedTorus(pos, float2(.5, .5), .5, .5);
+
+				//return SDF_Torus(pos, float2(1.5, .1));
+
+				//return SDF_Ellipsoid(pos, float3(1.5, .5, 1.5));
+
+				//return SDF_RoundCone(pos, .5, .2, 1);
+
+				//return SDF_SolidAngle(pos, float2(1, 1), 1);
 				
 				//return SDF_CappedCone(pos, 1, 1, 0);
 
@@ -83,7 +101,7 @@
 
 				//return SDF_Capsule(pos, 1, .5, 1);
 				
-				//return SDF_TriPrism(pos, float2(1, 1));
+				return SDF_TriPrism(pos, float2(1, 1));
 
 				//float4 normal = float4(EstimateNormal(pos), 1.0);
 				
