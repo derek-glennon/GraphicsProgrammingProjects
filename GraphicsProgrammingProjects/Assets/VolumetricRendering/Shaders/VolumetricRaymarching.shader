@@ -67,7 +67,23 @@
 
 			float3 map(float3 pos)
 			{
-				return SDF_HexPrism(pos, float2(1, 1));
+				return SDF_SolidAngle(pos, float2(1, 1), 1);
+				
+				//return SDF_CappedCone(pos, 1, 1, 0);
+
+				//return SDF_Cone(pos, float2(0, 1));
+
+				//return SDF_RoundedCylinder(pos, 1, 1, 1);
+
+				//return SDF_CappedCylinder(pos, 1, 1);
+
+				//return SDF_InfCylinder(pos, float3(0,0,1));
+
+				//return SDF_VerticalCapsule(pos, 1, 1);
+
+				//return SDF_Capsule(pos, 1, .5, 1);
+				
+				//return SDF_TriPrism(pos, float2(1, 1));
 
 				//float4 normal = float4(EstimateNormal(pos), 1.0);
 				
