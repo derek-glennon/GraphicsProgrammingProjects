@@ -28,6 +28,7 @@
 
             #include "UnityCG.cginc"
 			#include "Lighting.cginc"
+			#include "SDFs.cginc"
 
             struct appdata
             {
@@ -53,52 +54,6 @@
 			#define STEPS 64
 			#define MIN_DISTANCE 0.001
 
-			float SphereDistance(float3 pos)
-			{
-				return distance(pos, _Center) - _Radius;
-			}
-
-			float SDF_Sphere(float3 pos, float3 center, float radius)
-			{
-				return distance(pos, center) - radius;
-			}
-
-			float SDF_Box(float3 pos, float3 center, float3 size)
-			{
-				float x = max
-				(
-					pos.x - center.x - float3(size.x / 2.0, 0, 0),
-					center.x - pos.x - float3(size.x / 2.0, 0, 0)
-				);
-
-				float y = max
-				(
-					pos.y - center.y - float3(size.y / 2.0, 0, 0),
-					center.y - pos.y - float3(size.y / 2.0, 0, 0)
-				);
-
-				float z = max
-				(
-					pos.z - center.z - float3(size.z / 2.0, 0, 0),
-					center.z - pos.z - float3(size.z / 2.0, 0, 0)
-				);
-
-				float d = x;
-				d = max(d, y);
-				d = max(d, z);
-				return d;
-			}
-
-			float vmax(float3 v)
-			{
-				return max(max(v.x, v.y), v.z);
-			}
-
-			float SDF_BoxCheap(float3 pos, float3 center, float3 size)
-			{
-				return vmax(abs(pos - center) - size);
-			}
-
 			float SDF_Blend(float d1, float d2, float a)
 			{
 				return a * d1 + (1 - a) * d2;
@@ -112,14 +67,20 @@
 
 			float3 map(float3 pos)
 			{
+				return SDF_HexPrism(pos, float2(1, 1));
 
+				//float4 normal = float4(EstimateNormal(pos), 1.0);
+				
+				//return SDF_Plane(pos, normal);
 
-				return SDF_Blend
-				(
-					SDF_Sphere(pos, 0, 1),
-					SDF_Box(pos, 0, 1),
-					(sin(_Time.y) + 1.) / 2.
-				);
+				//return SDF_RoundBox(pos, 0, 1, .9);
+
+				//return SDF_Blend
+				//(
+				//	SDF_Sphere(pos, 0, 1),
+				//	SDF_Box(pos, 0, 1),
+				//	(sin(_Time.y) + 1.) / 2.
+				//);
 
 				//return max
 				//(
