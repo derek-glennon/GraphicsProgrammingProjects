@@ -11,6 +11,11 @@
 		[ExponentSlider]
 		_SpecularPower("Specular Power", Range(0, 256)) = 128
 		_Gloss("Gloss", Range(0,1)) = 0.5
+
+		[Header(Scrolling Parameters)][Space(5)]
+		_TimeValue("Time", Range(0,1)) = 0
+		_Offset("Offset", Range(0,1)) = 0.5
+		_Speed("Speed", float) = 1
 	}
 		SubShader
 		{
@@ -51,12 +56,50 @@
 			float _SpecularPower;
 			float _Gloss;
 
+			//Scrolling Paramters
+			float _TimeValue;
+			float _Offset;
+			float _Speed;
+
 			#define STEPS 64
 			#define MIN_DISTANCE 0.001
+
+			//Remaps x from a-b to c-d
+			inline float Remap(float x, float a, float b, float c, float d)
+			{
+				return (c + (x - a) * ((d - c) / (b - a)));
+			}
+
+			float SawtoothWave(float x)
+			{
+				return 2 * (x - floor(0.5 + x));
+			}
 
 			float SDF_Blend(float d1, float d2, float a)
 			{
 				return a * d1 + (1 - a) * d2;
+			}
+
+			float SDF_Blend3(float d1, float d2, float d3, float a)
+			{
+				if (a <= 0.333)
+				{
+					float t1 = Remap(a, 0, 0.333, 0, 1);
+					return lerp(d1, d2, t1);
+					//return t1 * d1 + (1 - t1) * d2;
+				}
+				else if (a > 0.333 && a <= 0.666)
+				{
+					float t2 = Remap(a, 0.333, 0.666, 0, 1);
+					return lerp(d2, d3, t2);
+					//return t2 * d3 + (1 - t2) * d2;
+				}
+				else if (a > 0.666)
+				{
+					float t3 = Remap(a, 0.666, 1, 0, 1);
+					return lerp(d3, d1, t3);
+				}
+				else return 0;
 			}
 
 			float SDF_SMin(float a, float b, float k = 32)
@@ -101,7 +144,7 @@
 
 				//return SDF_Capsule(pos, 1, .5, 1);
 				
-				return SDF_TriPrism(pos, float2(1, 1));
+				//return SDF_TriPrism(pos, float2(1, 1));
 
 				//float4 normal = float4(EstimateNormal(pos), 1.0);
 				
@@ -115,6 +158,14 @@
 				//	SDF_Box(pos, 0, 1),
 				//	(sin(_Time.y) + 1.) / 2.
 				//);
+
+				return SDF_Blend3
+				(
+					SDF_Sphere(pos, 0, 1),
+					SDF_Box(pos, 0, 1),
+					SDF_TriPrism(pos, float2(1, 1)),
+					Remap(SawtoothWave(_Speed * _Time.y + _Offset), -1, 1, 0, 1)
+				);
 
 				//return max
 				//(
@@ -143,12 +194,6 @@
 				c.rgb = diffuse + spec;
 				c.a = 1;
 				return c;
-			}
-
-			//Remaps x from a-b to c-d
-			inline float Remap(float x, float a, float b, float c, float d)
-			{
-				return (c + (x - a) * ((d - c) / (b - a)));
 			}
 
 			float3 EstimateNormal(float3 pos)
