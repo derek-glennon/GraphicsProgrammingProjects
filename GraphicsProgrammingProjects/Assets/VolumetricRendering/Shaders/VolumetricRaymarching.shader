@@ -31,6 +31,8 @@
             #pragma vertex vert
             #pragma fragment frag
 
+			#pragma target 4.0
+
             #include "UnityCG.cginc"
 			#include "Lighting.cginc"
 			#include "SDFs.cginc"
@@ -56,10 +58,14 @@
 			float _SpecularPower;
 			float _Gloss;
 
-			//Scrolling Paramters
+			//Scrolling Parameters
 			float _TimeValue;
 			float _Offset;
 			float _Speed;
+
+			//Array Parameters
+			#define ARRAY_SIZE 10
+			float _BlendArray[ARRAY_SIZE];
 
 			#define STEPS 64
 			#define MIN_DISTANCE 0.001
@@ -100,6 +106,45 @@
 					return lerp(d3, d1, t3);
 				}
 				else return 0;
+			}
+
+			void SetUpBlendArray(float3 pos)
+			{
+				_BlendArray[0] = SDF_Sphere(pos, 0, 1);
+				_BlendArray[1] = SDF_Box(pos, 0, 1);
+				_BlendArray[2] = SDF_TriPrism(pos, float2(1, 1));
+				_BlendArray[3] = SDF_Capsule(pos, 0, .25, .5);
+				_BlendArray[4] = SDF_RoundedCylinder(pos, .5, .5, .5);
+				_BlendArray[5] = SDF_CappedCone(pos, 1, 1, 0);
+				_BlendArray[6] = SDF_Ellipsoid(pos, float3(1.5, .5, 1.5));
+				_BlendArray[7] = SDF_Torus(pos, float2(1.5, .1));
+				_BlendArray[8] = SDF_Octahedron(pos, 1.5);
+				_BlendArray[9] = SDF_Pyramid(pos, 1);
+			}
+
+			float SDF_BlendN(float3 pos, float t)
+			{
+				float deltaT = 1.0 / ARRAY_SIZE;
+				float returnValue = 0.0;
+
+				int blendIndex = floor(Remap(t, 0, 1, 0, ARRAY_SIZE));
+				float2 tRange = float2(0,0);
+				float tRemap = 0;
+
+				if (t < 1.0 - deltaT)
+				{
+					tRange = float2((blendIndex)* deltaT, (blendIndex + 1) * deltaT);
+					tRemap = Remap(t, tRange.x, tRange.y, 0, 1);
+					return lerp(_BlendArray[blendIndex], _BlendArray[blendIndex + 1], tRemap);
+				}
+				else
+				{
+					tRange = float2(1.0 - deltaT, 1.0);
+					tRemap = Remap(t, tRange.x, tRange.y, 0, 1);
+					return lerp(_BlendArray[blendIndex], _BlendArray[0], tRemap);
+				}
+
+				return 0;
 			}
 
 			float SDF_SMin(float a, float b, float k = 32)
@@ -158,14 +203,18 @@
 				//	SDF_Box(pos, 0, 1),
 				//	(sin(_Time.y) + 1.) / 2.
 				//);
+				//return SDF_Sphere(pos, 0, 1);
+				SetUpBlendArray(pos);
+				//return SDF_BlendN(pos, _TimeValue);
+				return SDF_BlendN(pos, Remap(SawtoothWave(_Speed * _Time.y + _Offset), -1, 1, 0, 1));
 
-				return SDF_Blend3
-				(
-					SDF_Sphere(pos, 0, 1),
-					SDF_Box(pos, 0, 1),
-					SDF_TriPrism(pos, float2(1, 1)),
-					Remap(SawtoothWave(_Speed * _Time.y + _Offset), -1, 1, 0, 1)
-				);
+				//return SDF_Blend3
+				//(
+				//	SDF_Sphere(pos, 0, 1),
+				//	SDF_Box(pos, 0, 1),
+				//	SDF_TriPrism(pos, float2(1, 1)),
+				//	Remap(SawtoothWave(_Speed * _Time.y + _Offset), -1, 1, 0, 1)
+				//);
 
 				//return max
 				//(
