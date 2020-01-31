@@ -1,4 +1,6 @@
-﻿Shader "VolumetricRendering/VolumetricRaymarching"
+﻿// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
+
+Shader "VolumetricRendering/VolumetricRaymarching"
 {
     Properties
     {
@@ -16,6 +18,20 @@
 		_TimeValue("Time", Range(0,1)) = 0
 		_Offset("Offset", Range(0,1)) = 0.5
 		_Speed("Speed", float) = 1
+
+		[Header(Gradient Scroll Parameters)][Space(5)]
+		_HueWidth("Hue Width", Range(0, 1)) = 0
+		_HueScrollSpeed("Hue Scroll Speed", float) = 0
+
+		//Start of Gradient
+		[Header(Start of Gradient)]
+		_Saturation1("Saturation 1", Range(0,1)) = 0
+		_Lightness1("Lightness 1", Range(0,1)) = 0
+
+		//End of Gradient
+		[Header(End of Gradient)][Space(5)]
+		_Saturation2("Saturation 2", Range(0,1)) = 0
+		_Lightness2("Lightness 2", Range(0,1)) = 0
 	}
 		SubShader
 		{
@@ -30,8 +46,6 @@
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-
-			#pragma target 4.0
 
             #include "UnityCG.cginc"
 			#include "Lighting.cginc"
@@ -48,8 +62,10 @@
                 float2 uv : TEXCOORD0;
                 float4 vertex : SV_POSITION;
 				float3 worldPos : TEXCOORD1;
+				float3 viewDir : TEXCOORD2;
             };
 
+			//Sphere Properties
 			fixed4 _Color;
 			float3 _Center;
 			float _Radius;
@@ -63,6 +79,18 @@
 			float _Offset;
 			float _Speed;
 
+			//Scroll Parameters
+			float _HueWidth;
+			float _HueScrollSpeed;
+
+			//Start of Gradient
+			float _Saturation1;
+			float _Lightness1;
+
+			//End of Gradient
+			float _Saturation2;
+			float _Lightness2;
+
 			//Array Parameters
 			#define ARRAY_SIZE 10
 			float _BlendArray[ARRAY_SIZE];
@@ -70,6 +98,22 @@
 			#define STEPS 64
 			#define MIN_DISTANCE 0.001
 
+			//Conversion Functions found at: http://www.chilliant.com/rgb2hsv.html
+			float3 HUEtoRGB(in float H)
+			{
+				float R = abs(H * 6 - 3) - 1;
+				float G = 2 - abs(H * 6 - 2);
+				float B = 2 - abs(H * 6 - 4);
+				return saturate(float3(R, G, B));
+			}
+
+			float3 HSLtoRGB(in float3 HSL)
+			{
+				float3 RGB = HUEtoRGB(HSL.x);
+				float C = (1 - abs(2 * HSL.z - 1)) * HSL.y;
+				return (RGB - 0.5) * C + HSL.z;
+			}
+			
 			//Remaps x from a-b to c-d
 			inline float Remap(float x, float a, float b, float c, float d)
 			{
@@ -110,16 +154,29 @@
 
 			void SetUpBlendArray(float3 pos)
 			{
+				//_BlendArray[0] = SDF_Sphere(pos, 0, 1);
+				//_BlendArray[1] = SDF_Box(pos, 0, 1);
+				//_BlendArray[2] = SDF_TriPrism(pos, float2(1, 1));
+				//_BlendArray[3] = SDF_Capsule(pos, 0, .25, .5);
+				//_BlendArray[4] = SDF_RoundedCylinder(pos, .5, .5, .5);
+				//_BlendArray[5] = SDF_CappedCone(pos, 1, 1, 0);
+				//_BlendArray[6] = SDF_Ellipsoid(pos, float3(1.5, .5, 1.5));
+				//_BlendArray[7] = SDF_Torus(pos, float2(1.5, .1));
+				//_BlendArray[8] = SDF_Octahedron(pos, 1.5);
+				//_BlendArray[9] = SDF_Pyramid(pos, 1);
+
 				_BlendArray[0] = SDF_Sphere(pos, 0, 1);
 				_BlendArray[1] = SDF_Box(pos, 0, 1);
 				_BlendArray[2] = SDF_TriPrism(pos, float2(1, 1));
-				_BlendArray[3] = SDF_Capsule(pos, 0, .25, .5);
-				_BlendArray[4] = SDF_RoundedCylinder(pos, .5, .5, .5);
+				_BlendArray[3] = SDF_RoundedCylinder(pos, .5, .5, .5);
+				_BlendArray[4] = SDF_Pyramid(pos, 1);
 				_BlendArray[5] = SDF_CappedCone(pos, 1, 1, 0);
-				_BlendArray[6] = SDF_Ellipsoid(pos, float3(1.5, .5, 1.5));
+				_BlendArray[6] = SDF_Octahedron(pos, 1.5);
+
+					
 				_BlendArray[7] = SDF_Torus(pos, float2(1.5, .1));
-				_BlendArray[8] = SDF_Octahedron(pos, 1.5);
-				_BlendArray[9] = SDF_Pyramid(pos, 1);
+				_BlendArray[8] = SDF_Ellipsoid(pos, float3(1.5, .5, 1.5));
+				_BlendArray[9] = SDF_RoundBox(pos, 0, .5, .9);
 			}
 
 			float SDF_BlendN(float3 pos, float t)
@@ -223,6 +280,17 @@
 				//);
 			}
 
+			float3 EstimateNormal(float3 pos)
+			{
+				const float eps = 0.01;
+
+				float deltaX = map(pos + float3(eps, 0, 0)) - map(pos - float3(eps, 0, 0));
+				float deltaY = map(pos + float3(0, eps, 0)) - map(pos - float3(0, eps, 0));
+				float deltaZ = map(pos + float3(0, 0, eps)) - map(pos - float3(0, 0, eps));
+
+				return normalize(float3(deltaX, deltaY, deltaZ));
+			}
+
 			fixed4 SimpleBlinnPhong(fixed3 normal, float3 viewDir)
 			{
 				//Due to weird definition of viewDir have to reverse the direction here
@@ -245,20 +313,34 @@
 				return c;
 			}
 
-			float3 EstimateNormal(float3 pos)
+			fixed4 FresnelGradientScroll(float3 pos, float3 viewDir)
 			{
-				const float eps = 0.01;
+				float3 normal = EstimateNormal(pos);
 
-				float deltaX = map(pos + float3(eps, 0, 0)) - map(pos - float3(eps, 0, 0));
-				float deltaY = map(pos + float3(0, eps, 0)) - map(pos - float3(0, eps, 0));
-				float deltaZ = map(pos + float3(0, 0, eps)) - map(pos - float3(0, 0, eps));
+				float fresnel = dot(normal, viewDir);
+				fresnel = Remap(fresnel, -1, 1, 0, 1);
+				
+				//Create Sawtooth Hue Value
+				float hue = SawtoothWave(_HueWidth * fresnel + _HueScrollSpeed * _Time.x);
+				hue = Remap(hue, -1, 1, 0, 1);
 
-				return normalize(float3(deltaX, deltaY, deltaZ));
+				//Lerp between constant values
+				float saturation = lerp(_Saturation1, _Saturation2, fresnel);
+				float lightness = lerp(_Lightness1, _Lightness2, fresnel);
+				float3 hsl = float3(hue, saturation, lightness);
+
+				//Convet to RGB
+				fixed4 rgb;
+				rgb.rgb = HSLtoRGB(hsl);
+				rgb.a = 1.0;
+
+				return rgb;
 			}
 
 			fixed4 RenderSurface(float3 pos, float3 viewDir)
 			{
 				float3 normal = EstimateNormal(pos);
+
 				return SimpleBlinnPhong(normal, viewDir);
 			}
 
@@ -269,7 +351,8 @@
 					float distance = map(pos);
 					if (distance < MIN_DISTANCE)
 					{
-						return RenderSurface(pos, dir);
+						//return RenderSurface(pos, dir);
+						return FresnelGradientScroll(pos, dir);
 					}
 
 					//March along the ray
@@ -285,6 +368,8 @@
                 v2f o;
                 o.vertex = UnityObjectToClipPos(v.vertex);
 				o.uv = v.uv;
+
+				o.viewDir = normalize(WorldSpaceViewDir(v.vertex));
 
 				o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
 

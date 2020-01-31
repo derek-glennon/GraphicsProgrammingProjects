@@ -18,11 +18,21 @@ Material:
   disabledShaderPasses: []
   m_SavedProperties:
     serializedVersion: 3
-    m_TexEnvs: []
+    m_TexEnvs:
+    - _NormalMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Floats:
     - _Gloss: 1
+    - _HueScrollSpeed: 5
+    - _HueWidth: 0.2
+    - _Lightness1: 0.5
+    - _Lightness2: 0.5
     - _Offset: 0.5
     - _Radius: 0.4
+    - _Saturation1: 0.5
+    - _Saturation2: 0.5
     - _SpecularPower: 128
     - _Speed: 0.2
     - _Time: 0
