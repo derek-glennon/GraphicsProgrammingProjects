@@ -177,18 +177,18 @@ Shader "VolumetricRendering/VolumetricRaymarching"
 				//_BlendArray[8] = SDF_Ellipsoid(pos, float3(1.5, .5, 1.5));
 				//_BlendArray[9] = SDF_RoundBox(pos, 0, .5, .9);
 
-				_BlendArray[0] = SDF_Box(pos, 0, 1);
-				_BlendArray[1] = SDF_Subtraction(SDF_Sphere(pos, 0, .6), SDF_Box(pos, 0, 1));
-				_BlendArray[2] = SDF_SmoothSubtraction(SDF_Sphere(pos, 0, .6), SDF_Box(pos, 0, 1), 0.1);
-				float3 YPos = SDF_Elongate(pos, float3(0, 0.3, 0));
-				float3 XPos = SDF_Elongate(YPos, float3(0.3, 0, 0));
-				float3 ZPos = SDF_Elongate(XPos, float3(0, 0, 0.3));
-				_BlendArray[3] = SDF_SmoothSubtraction(SDF_Sphere(YPos, 0, .6), SDF_Box(YPos, 0, 1), 0.1);
-				_BlendArray[4] = SDF_SmoothSubtraction(SDF_Sphere(XPos, 0, .6), SDF_Box(XPos, 0, 1), 0.1);
-				_BlendArray[5] = SDF_SmoothSubtraction(SDF_Sphere(ZPos, 0, .6), SDF_Box(ZPos, 0, 1), 0.1);
-				_BlendArray[6] = SDF_Subtraction(SDF_Sphere(ZPos, 0, .6), SDF_Box(ZPos, 0, 1));
-				_BlendArray[7] = SDF_Box(ZPos, 0, 1);
-				_BlendArray[8] = SDF_Box(pos, 0, 1);
+				//_BlendArray[0] = SDF_Box(pos, 0, 1);
+				//_BlendArray[1] = SDF_Subtraction(SDF_Sphere(pos, 0, .6), SDF_Box(pos, 0, 1));
+				//_BlendArray[2] = SDF_SmoothSubtraction(SDF_Sphere(pos, 0, .6), SDF_Box(pos, 0, 1), 0.1);
+				//float3 YPos = SDF_Elongate(pos, float3(0, 0.3, 0));
+				//float3 XPos = SDF_Elongate(YPos, float3(0.3, 0, 0));
+				//float3 ZPos = SDF_Elongate(XPos, float3(0, 0, 0.3));
+				//_BlendArray[3] = SDF_SmoothSubtraction(SDF_Sphere(YPos, 0, .6), SDF_Box(YPos, 0, 1), 0.1);
+				//_BlendArray[4] = SDF_SmoothSubtraction(SDF_Sphere(XPos, 0, .6), SDF_Box(XPos, 0, 1), 0.1);
+				//_BlendArray[5] = SDF_SmoothSubtraction(SDF_Sphere(ZPos, 0, .6), SDF_Box(ZPos, 0, 1), 0.1);
+				//_BlendArray[6] = SDF_Subtraction(SDF_Sphere(ZPos, 0, .6), SDF_Box(ZPos, 0, 1));
+				//_BlendArray[7] = SDF_Box(ZPos, 0, 1);
+				//_BlendArray[8] = SDF_Box(pos, 0, 1);
 			}
 
 			float SDF_BlendN(float3 pos, float t)
@@ -276,6 +276,13 @@ Shader "VolumetricRendering/VolumetricRaymarching"
 				//float value = SDF_SmoothSubtraction(SDF_Sphere(pos, 0, .6), SDF_Box(pos, 0, 1), 0.1);
 				//return value;
 				
+				float scale = 1.0;
+				float3 scaledPos = SDF_Scale(pos, scale);
+				float3 symPos = SDF_SymXZ(pos);
+				float3 repPos = SDF_Rep(pos, 2);
+				float3 repPosLim = SDF_RepLim(pos, 2, float3(0, 1, 0));
+				return SDF_Box(repPosLim, 0, 1);
+
 				//return SDF_Blend
 				//(
 				//	SDF_Sphere(pos, 0, 1),
@@ -283,9 +290,9 @@ Shader "VolumetricRendering/VolumetricRaymarching"
 				//	(sin(_Time.y) + 1.) / 2.
 				//);
 				//return SDF_Sphere(pos, 0, 1);
-				SetUpBlendArray(pos);
+				//SetUpBlendArray(pos);
 				//return SDF_BlendN(pos, _TimeValue);
-				return SDF_BlendN(pos, Remap(SawtoothWave(_Speed * _Time.y + _Offset), -1, 1, 0, 1));
+				//return SDF_BlendN(pos, Remap(SawtoothWave(_Speed * _Time.y + _Offset), -1, 1, 0, 1));
 
 				//return SDF_Blend3
 				//(

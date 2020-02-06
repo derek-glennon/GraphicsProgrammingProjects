@@ -72,3 +72,44 @@ float SDF_SmoothIntersection(float d1, float d2, float k)
 	float h = clamp(0.5 - 0.5 * (d2 - d1) / k, 0.0, 1.0);
 	return lerp(d2, d1, h) + k * h * (1.0 - h);
 }
+
+//TODO: Get Rotation Matrices and combine with Translation Matrix
+float SDF_Transform()
+{
+
+}
+
+//Perform Primitive(SDF_Scale(pos, s)) * s
+float3 SDF_Scale(float3 pos, float s)
+{
+	return pos / s;
+}
+
+float3 SDF_SymX(float3 pos)
+{
+	pos.x = abs(pos.x);
+	return pos;
+}
+
+float3 SDF_SymXZ(float3 pos)
+{
+	pos.xz = abs(pos.xz);
+	return pos;
+}
+
+float3 mod(float3 x, float3 y)
+{
+	return x - y * floor(x / y);
+}
+
+float3 SDF_Rep(float3 pos, float3 c)
+{
+	float3 q = mod(pos + 0.5 * c, c) - 0.5 * c;
+	return q;
+}
+
+float3 SDF_RepLim(float3 pos, float c, float3 l)
+{
+	float3 q = pos - c * clamp(round(pos / c), -1, 1);
+	return q;
+}
