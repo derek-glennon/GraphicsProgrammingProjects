@@ -165,18 +165,18 @@ Shader "VolumetricRendering/VolumetricRaymarching"
 				//_BlendArray[8] = SDF_Octahedron(pos, 1.5);
 				//_BlendArray[9] = SDF_Pyramid(pos, 1);
 
-				_BlendArray[0] = SDF_Sphere(pos, 0, 1);
-				_BlendArray[1] = SDF_Box(pos, 0, 1);
-				_BlendArray[2] = SDF_TriPrism(pos, float2(1, 1));
-				_BlendArray[3] = SDF_RoundedCylinder(pos, .5, .5, .5);
-				_BlendArray[4] = SDF_Pyramid(pos, 1);
-				_BlendArray[5] = SDF_CappedCone(pos, 1, 1, 0);
-				_BlendArray[6] = SDF_Octahedron(pos, 1.5);
+				//_BlendArray[0] = SDF_Sphere(pos, 0, 1);
+				//_BlendArray[1] = SDF_Box(pos, 0, 1);
+				//_BlendArray[2] = SDF_TriPrism(pos, float2(1, 1));
+				//_BlendArray[3] = SDF_RoundedCylinder(pos, .5, .5, .5);
+				//_BlendArray[4] = SDF_Pyramid(pos, 1);
+				//_BlendArray[5] = SDF_CappedCone(pos, 1, 1, 0);
+				//_BlendArray[6] = SDF_Octahedron(pos, 1.5);
+				//_BlendArray[7] = SDF_Torus(pos, float2(1.5, .1));
+				//_BlendArray[8] = SDF_Ellipsoid(pos, float3(1.5, .5, 1.5));
+				//_BlendArray[9] = SDF_RoundBox(pos, 0, .5, .9);
 
-					
-				_BlendArray[7] = SDF_Torus(pos, float2(1.5, .1));
-				_BlendArray[8] = SDF_Ellipsoid(pos, float3(1.5, .5, 1.5));
-				_BlendArray[9] = SDF_RoundBox(pos, 0, .5, .9);
+
 			}
 
 			float SDF_BlendN(float3 pos, float t)
@@ -210,6 +210,71 @@ Shader "VolumetricRendering/VolumetricRaymarching"
 				return -log(max(0.0001, res)) / k;
 			}
 
+			float3 SDF_Elongate(float3 pos, float3 h)
+			{
+				float3 newPos = pos - clamp(pos, -h, h);
+				return newPos;
+			}
+
+			float SDF_Round(float sdf_value, float rad)
+			{
+				return sdf_value - rad;
+			}
+
+			float SDF_Onion(float sdf_value, float thickness)
+			{
+				return abs(sdf_value) - thickness;
+			}
+
+			//sdf_2d is a SDF used on a 2D function
+			//TODO: Add 2D SDFs
+			float SDF_Extrusion(float3 pos, float sdf_2d, float h)
+			{
+				float2 w = float2(sdf_2d, abs(pos.z) - h);
+				return min(max(w.x, w.y), 0.0) + length(max(w, 0.0));
+			}
+
+			//Must use an SDF on this retuned value
+			float SDF_Revolution(float3 pos, float o)
+			{
+				float2 q = float2(length(pos.xz) - o, pos.y);
+				return q;
+			}
+
+			//TODO: Could add change of metric functions
+
+			float SDF_Min(float d1, float d2)
+			{
+				return min(d1, d2);
+			}
+
+			float SDF_Subtraction(float d1, float d2)
+			{
+				return max(-d1, d2);
+			}
+
+			float SDF_Intersection(float d1, float d2)
+			{
+				return max(d1, d2);
+			}
+
+			float SDF_SmoothUnion(float d1, float d2, float k)
+			{
+				float h = clamp(0.5 + 0.5 * (d2 - d1) / k, 0.0, 1.0);
+				return lerp(d2, d1, h) - k * h * (1.0 - h);
+			}
+
+			float SDF_SmoothSubtraction(float d1, float d2, float k)
+			{
+				float h = clamp(0.5 - 0.5 * (d2 + d1) / k, 0.0, 1.0);
+				return lerp(d2, -d1, h) + k * h * (1.0 - h);
+			}
+
+			float SDF_SmoothIntersection(float d1, float d2, float k)
+			{
+				float h = clamp(0.5 - 0.5 * (d2 - d1) / k, 0.0, 1.0);
+				return lerp(d2, d1, h) + k * h * (1.0 - h);
+			}
 			float3 map(float3 pos)
 			{
 				//return SDF_Quad(pos, float3(1, 0, 0), float3(0, 1, 0), float3(0, 0, 1), float3(0, 0, 1));
@@ -253,7 +318,22 @@ Shader "VolumetricRendering/VolumetricRaymarching"
 				//return SDF_Plane(pos, normal);
 
 				//return SDF_RoundBox(pos, 0, 1, .9);
+				//pos = pos - float3(-3.0, 0.0, 1.0);
+				//pos = SDF_Elongate(pos, float3(0, 1, 0));
+				//return SDF_CappedCylinder(pos, 1, 1);
 
+				//float value = SDF_CappedCylinder(pos, 1, 1);
+				//return SDF_Round(value, .5);
+
+				//float value = SDF_CappedCylinder(pos, 1, 1);
+				//return SDF_Onion(value, .2);
+
+				//return SDF_Subtraction(SDF_Box(pos, 0, 1), SDF_Sphere(pos, 0, .5));
+				//return SDF_SmoothSubtraction(SDF_Sphere(pos, 0, .6), SDF_Box(pos, 0, 1), 0.1);
+
+				pos = SDF_Elongate(pos, float3(0, 1, 0));
+				float value = SDF_SmoothSubtraction(SDF_Sphere(pos, 0, .6), SDF_Box(pos, 0, 1), 0.1);
+				return value;
 				//return SDF_Blend
 				//(
 				//	SDF_Sphere(pos, 0, 1),
@@ -261,9 +341,9 @@ Shader "VolumetricRendering/VolumetricRaymarching"
 				//	(sin(_Time.y) + 1.) / 2.
 				//);
 				//return SDF_Sphere(pos, 0, 1);
-				SetUpBlendArray(pos);
+				//SetUpBlendArray(pos);
 				//return SDF_BlendN(pos, _TimeValue);
-				return SDF_BlendN(pos, Remap(SawtoothWave(_Speed * _Time.y + _Offset), -1, 1, 0, 1));
+				//return SDF_BlendN(pos, Remap(SawtoothWave(_Speed * _Time.y + _Offset), -1, 1, 0, 1));
 
 				//return SDF_Blend3
 				//(

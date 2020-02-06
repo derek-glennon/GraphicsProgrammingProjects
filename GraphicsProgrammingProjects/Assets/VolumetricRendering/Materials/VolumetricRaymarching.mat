@@ -25,7 +25,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Floats:
     - _Gloss: 1
-    - _HueScrollSpeed: 5
+    - _HueScrollSpeed: 4
     - _HueWidth: 0.2
     - _Lightness1: 0.5
     - _Lightness2: 0.5
