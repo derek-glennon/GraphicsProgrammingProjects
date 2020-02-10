@@ -93,7 +93,7 @@ Shader "VolumetricRendering/VolumetricRaymarching"
 			float _Lightness2;
 
 			//Array Parameters
-			#define ARRAY_SIZE 9
+			#define ARRAY_SIZE 2
 			float _BlendArray[ARRAY_SIZE];
 
 			#define STEPS 64
@@ -189,6 +189,9 @@ Shader "VolumetricRendering/VolumetricRaymarching"
 				//_BlendArray[6] = SDF_Subtraction(SDF_Sphere(ZPos, 0, .6), SDF_Box(ZPos, 0, 1));
 				//_BlendArray[7] = SDF_Box(ZPos, 0, 1);
 				//_BlendArray[8] = SDF_Box(pos, 0, 1);
+
+				_BlendArray[0] = SDF_Sphere(pos, 0, .8);
+				_BlendArray[1] = SDF_CappedCone(pos, .5, 1, 0);
 			}
 
 			float SDF_BlendN(float3 pos, float t)
@@ -276,12 +279,29 @@ Shader "VolumetricRendering/VolumetricRaymarching"
 				//float value = SDF_SmoothSubtraction(SDF_Sphere(pos, 0, .6), SDF_Box(pos, 0, 1), 0.1);
 				//return value;
 				
-				float scale = 1.0;
-				float3 scaledPos = SDF_Scale(pos, scale);
-				float3 symPos = SDF_SymXZ(pos);
-				float3 repPos = SDF_Rep(pos, 2);
-				float3 repPosLim = SDF_RepLim(pos, 2, float3(0, 1, 0));
-				return SDF_Box(repPosLim, 0, 1);
+				//float scale = 1.0;
+				//float3 scaledPos = SDF_Scale(pos, scale);
+				//float3 symPos = SDF_SymXZ(pos);
+				//float3 repPos = SDF_Rep(pos, 2);
+				//float3 repPosLim = SDF_RepLim(pos, 2, float3(0, 1, 0));
+				//return SDF_Box(repPosLim, 0, 1);
+				
+				SetUpBlendArray(pos);
+				float v1 = SDF_BlendN(pos, Remap(SawtoothWave(_Speed * _Time.y + _Offset), -1, 1, 0, 1));
+				//float v1 = SDF_Torus(pos, float2(1, .2));
+
+				float amp = .2;
+				float wavelength = 10;
+				float speed = 5;
+				float offsetX = 0;
+				float offsetY = .5;
+				float offsetZ = .25;
+				//float v2 = sin(wavelength * pos.x + _Time.y) * sin(wavelength * pos.y + _Time.y) * sin(wavelength * pos.z + _Time.y);
+				//float v2 = amp * Remap(sin(wavelength * pos.x + _Time.y * speed), -1, 1, -1, 0);// * sin(amp * pos.x + _Time.y);
+				float v2 = amp * (Remap(sin(wavelength * pos.x + _Time.y * speed + offsetX), -1, 1, -1, 0)
+					* Remap(sin(wavelength * pos.y + _Time.y * speed + offsetY), -1, 1, -1, 0)
+					* Remap(sin(wavelength * pos.z + _Time.y * speed + offsetZ), -1, 1, -1, 0));
+				return v1 + v2;
 
 				//return SDF_Blend
 				//(
@@ -320,7 +340,7 @@ Shader "VolumetricRendering/VolumetricRaymarching"
 				return normalize(float3(deltaX, deltaY, deltaZ));
 			}
 
-			fixed4 SimpleBlinnPhong(fixed3 normal, float3 viewDir)
+			fixed4 SimpleBlinnPhong(fixed3 normal, float3 viewDir, fixed3 diffuseColor)
 			{
 				//Due to weird definition of viewDir have to reverse the direction here
 				viewDir = normalize(-viewDir);
@@ -330,7 +350,7 @@ Shader "VolumetricRendering/VolumetricRaymarching"
 
 				//Diffuse
 				fixed3 NdotL = max(dot(normal, lightDir), 0);
-				fixed3 diffuse = NdotL * _Color.rgb * lightCol;
+				fixed3 diffuse = NdotL * diffuseColor * lightCol;
 
 				//Specular
 				fixed3 h = normalize(lightDir + viewDir);
@@ -366,11 +386,11 @@ Shader "VolumetricRendering/VolumetricRaymarching"
 				return rgb;
 			}
 
-			fixed4 RenderSurface(float3 pos, float3 viewDir)
+			fixed4 RenderSurface(float3 pos, float3 viewDir, fixed3 diffuse)
 			{
 				float3 normal = EstimateNormal(pos);
 
-				return SimpleBlinnPhong(normal, viewDir);
+				return SimpleBlinnPhong(normal, viewDir, diffuse);
 			}
 
 			fixed4 Raymarch(float3 pos, float3 dir)
@@ -380,8 +400,9 @@ Shader "VolumetricRendering/VolumetricRaymarching"
 					float distance = map(pos);
 					if (distance < MIN_DISTANCE)
 					{
-						//return RenderSurface(pos, dir);
-						return FresnelGradientScroll(pos, dir);
+						fixed3 diffuseColor = FresnelGradientScroll(pos, dir);
+						return RenderSurface(pos, dir, diffuseColor);
+						//return FresnelGradientScroll(pos, dir);
 					}
 
 					//March along the ray
