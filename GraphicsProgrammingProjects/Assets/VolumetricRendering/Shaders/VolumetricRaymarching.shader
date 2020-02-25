@@ -282,12 +282,12 @@ Shader "VolumetricRendering/VolumetricRaymarching"
 				//float scale = 1.0;
 				//float3 scaledPos = SDF_Scale(pos, scale);
 				//float3 symPos = SDF_SymXZ(pos);
-				//float3 repPos = SDF_Rep(pos, 2);
+				float3 repPos = SDF_Rep(pos, 3);
 				//float3 repPosLim = SDF_RepLim(pos, 2, float3(0, 1, 0));
 				//return SDF_Box(repPosLim, 0, 1);
 				
-				SetUpBlendArray(pos);
-				float v1 = SDF_BlendN(pos, Remap(SawtoothWave(_Speed * _Time.y + _Offset), -1, 1, 0, 1));
+				SetUpBlendArray(repPos);
+				float v1 = SDF_BlendN(repPos, Remap(SawtoothWave(_Speed * _Time.y + _Offset), -1, 1, 0, 1));
 				//float v1 = SDF_Torus(pos, float2(1, .2));
 
 				float amp = .2;
@@ -298,9 +298,9 @@ Shader "VolumetricRendering/VolumetricRaymarching"
 				float offsetZ = .25;
 				//float v2 = sin(wavelength * pos.x + _Time.y) * sin(wavelength * pos.y + _Time.y) * sin(wavelength * pos.z + _Time.y);
 				//float v2 = amp * Remap(sin(wavelength * pos.x + _Time.y * speed), -1, 1, -1, 0);// * sin(amp * pos.x + _Time.y);
-				float v2 = amp * (Remap(sin(wavelength * pos.x + _Time.y * speed + offsetX), -1, 1, -1, 0)
-					* Remap(sin(wavelength * pos.y + _Time.y * speed + offsetY), -1, 1, -1, 0)
-					* Remap(sin(wavelength * pos.z + _Time.y * speed + offsetZ), -1, 1, -1, 0));
+				float v2 = amp * (Remap(sin(wavelength * repPos.x + _Time.y * speed + offsetX), -1, 1, -1, 0)
+					* Remap(sin(wavelength * repPos.y + _Time.y * speed + offsetY), -1, 1, -1, 0)
+					* Remap(sin(wavelength * repPos.z + _Time.y * speed + offsetZ), -1, 1, -1, 0));
 				return v1 + v2;
 
 				//return SDF_Blend
