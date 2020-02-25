@@ -12,11 +12,21 @@ public class RayTracingMaster : MonoBehaviour
 
     private Camera mainCamera;
 
-
+    private uint currentSample = 0;
+    private Material addMaterial;
 
     private void Awake()
     {
         mainCamera = GetComponent<Camera>();
+    }
+
+    private void Update()
+    {
+        if (transform.hasChanged)
+        {
+            currentSample = 0;
+            transform.hasChanged = false;
+        }
     }
 
     private void OnRenderImage(RenderTexture source, RenderTexture destination)
@@ -38,7 +48,16 @@ public class RayTracingMaster : MonoBehaviour
         RayTracingShader.Dispatch(0, threadGroupsX, threadGroupsY, 1);
 
         //Blit the result texture to the screen
-        Graphics.Blit(target, destination);
+        if (addMaterial == null)
+        {
+            addMaterial = new Material(Shader.Find("Hidden/AddShader"));
+        }
+
+        addMaterial.SetFloat("_Sample", currentSample);
+
+        Graphics.Blit(target, destination, addMaterial);
+
+        currentSample++;
     }
 
     private void InitRenderTexture()
@@ -50,6 +69,9 @@ public class RayTracingMaster : MonoBehaviour
             {
                 target.Release();
             }
+
+            //Reset AA samples
+            currentSample = 0;
 
             //Get a render texture for Ray Tracing
             target = new RenderTexture(Screen.width, Screen.height, 0, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
@@ -64,5 +86,7 @@ public class RayTracingMaster : MonoBehaviour
         RayTracingShader.SetMatrix("_CameraInverseProjection", mainCamera.projectionMatrix.inverse);
 
         RayTracingShader.SetTexture(0, "_SkyboxTexture", SkyboxTexture);
+
+        RayTracingShader.SetVector("_PixelOffset", new Vector2(Random.value, Random.value));
     }
 }
