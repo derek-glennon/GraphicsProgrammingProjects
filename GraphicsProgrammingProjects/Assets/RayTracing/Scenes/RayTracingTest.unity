@@ -198,13 +198,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1803389761}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 3, z: -4}
+  m_LocalRotation: {x: 0.11829687, y: 0.41900265, z: -0.05516273, w: 0.8985542}
+  m_LocalPosition: {x: 0, y: 6, z: -4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1973215381}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 15, y: 50, z: 0}
 --- !u!114 &1803389765
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -218,7 +218,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   RayTracingShader: {fileID: 7200000, guid: f45c587b9e0a49b4dbe7510c39c916bc, type: 3}
-  SkyboxTexture: {fileID: 2800000, guid: 164fe78f8e08484498081c19e84a04fe, type: 3}
+  SkyboxTexture: {fileID: 2800000, guid: 9f08ec4fdfde360419b194426cf861a7, type: 3}
 --- !u!114 &1803389766
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -263,8 +263,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 355ec55eb9ceea440ba4a8dfbdfe4288, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  minAngle: -10
-  maxAngle: 40
+  minAngle: -30
+  maxAngle: 0
   speed: 1
 --- !u!4 &1973215381
 Transform:
