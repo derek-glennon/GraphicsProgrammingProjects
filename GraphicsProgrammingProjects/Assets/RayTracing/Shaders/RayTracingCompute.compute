@@ -14,6 +14,8 @@ static const float PI = 3.14159265f;
 
 float2 _PixelOffset;
 
+float4 _DirectionalLight;
+
 struct Ray
 {
 	float3 origin;
@@ -114,15 +116,26 @@ float3 Shade(inout Ray ray, RayHit hit)
 {
 	if (hit.distance < 1.#INF)
 	{
-		float3 specular = float3(0.6f, 0.6f, 0.6f);
+		float3 specular = float3(0.04f, 0.04f, 0.04f);
+		float3 albedo = float3(0.8f, 0.8f, 0.8f);
 
 		//Reflect the ray and multiply energy with specular reflection
 		ray.origin = hit.position + hit.normal * 0.001f;
 		ray.direction = reflect(ray.direction, hit.normal);
 		ray.energy *= specular;
 
-		//return nothing
-		return float3(0.0f, 0.0f, 0.0f);
+		//Shadow test ray
+		bool shadow = false;
+		Ray shadowRay = CreateRay(hit.position + hit.normal * 0.001f, -1 * _DirectionalLight.xyz);
+		RayHit shadowHit = Trace(shadowRay);
+		if (shadowHit.distance != 1.#INF)
+		{
+			return float3(0.0f, 0.0f, 0.0f);
+		}
+
+		//Return a diffuse-shaded color
+		float NdotL = dot(hit.normal, _DirectionalLight.xyz);
+		return saturate(-1 * NdotL) * _DirectionalLight.w * albedo;
 	}
 	else
 	{
@@ -132,7 +145,7 @@ float3 Shade(inout Ray ray, RayHit hit)
 		//Sample the Skybox and write it
 		float theta = acos(ray.direction.y) / -PI;
 		float phi = atan2(ray.direction.x, -ray.direction.z) / -PI * 0.5f;
-		return _SkyboxTexture.SampleLevel(sampler_SkyboxTexture, float2(phi, theta), 0) * 0.5f;
+		return _SkyboxTexture.SampleLevel(sampler_SkyboxTexture, float2(phi, theta), 0).xyz * 0.5f;
 	}
 }
 
@@ -148,6 +161,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
 	//Get a ray for the UVs
 	Ray ray = CreateCameraRay(uv);
+	RayHit hit = Trace(ray);
 
 	//Trace and Shade
 	float3 result = float3(0.0f, 0.0f, 0.0f);
@@ -159,8 +173,6 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 		if (!any(ray.energy))
 			break;
 	}
-	RayHit hit = Trace(ray);
-	result = Shade(ray, hit);
 
 	Result[id.xy] = float4(result, 1.0);
 

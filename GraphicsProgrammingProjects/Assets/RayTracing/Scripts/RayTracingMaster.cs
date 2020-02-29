@@ -4,14 +4,16 @@ using UnityEngine;
 
 public class RayTracingMaster : MonoBehaviour
 {
-    public ComputeShader RayTracingShader;
+    [SerializeField]
+    private ComputeShader RayTracingShader;
+    [SerializeField]
+    private Texture SkyboxTexture;
+    [SerializeField]
+    private Light DirectionalLight;
 
-    public Texture SkyboxTexture;
 
     private RenderTexture target;
-
     private Camera mainCamera;
-
     private uint currentSample = 0;
     private Material addMaterial;
 
@@ -26,6 +28,12 @@ public class RayTracingMaster : MonoBehaviour
         {
             currentSample = 0;
             transform.hasChanged = false;
+        }
+
+        if (DirectionalLight.transform.hasChanged)
+        {
+            currentSample = 0;
+            DirectionalLight.transform.hasChanged = false;
         }
     }
 
@@ -88,5 +96,8 @@ public class RayTracingMaster : MonoBehaviour
         RayTracingShader.SetTexture(0, "_SkyboxTexture", SkyboxTexture);
 
         RayTracingShader.SetVector("_PixelOffset", new Vector2(Random.value, Random.value));
+
+        Vector3 lightDir = DirectionalLight.transform.forward;
+        RayTracingShader.SetVector("_DirectionalLight", new Vector4(lightDir.x, lightDir.y, lightDir.z, DirectionalLight.intensity));
     }
 }
