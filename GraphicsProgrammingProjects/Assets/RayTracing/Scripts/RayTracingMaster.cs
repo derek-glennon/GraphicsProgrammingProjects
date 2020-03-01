@@ -11,11 +11,31 @@ public class RayTracingMaster : MonoBehaviour
     [SerializeField]
     private Light DirectionalLight;
 
+    [Header("Spheres")]
+    [Space(5)]
+    [SerializeField]
+    private Vector2 sphereRadius = new Vector2(3.0f, 8.0f);
+    [SerializeField]
+    private uint spheresMax = 100;
+    [SerializeField]
+    private float spherePlacementRadius = 100.0f;
 
     private RenderTexture target;
     private Camera mainCamera;
     private uint currentSample = 0;
     private Material addMaterial;
+
+    //Sphere Buffer
+    private ComputeBuffer sphereBuffer;
+
+
+    private struct Sphere
+    {
+        public Vector3 position;
+        public float radius;
+        public Vector3 albedo;
+        public Vector3 specular;
+    };
 
     private void Awake()
     {
@@ -35,6 +55,66 @@ public class RayTracingMaster : MonoBehaviour
             currentSample = 0;
             DirectionalLight.transform.hasChanged = false;
         }
+    }
+
+    private void OnEnable()
+    {
+        currentSample = 0;
+        SetUpScene();
+    }
+
+    private void OnDisable()
+    {
+        if (sphereBuffer != null)
+        {
+            sphereBuffer.Release();
+        }
+    }
+
+    private void SetUpScene()
+    {
+        List<Sphere> spheres = new List<Sphere>();
+
+        //Add a number of random spheres
+        for (int i = 0; i < spheresMax; i++)
+        {
+            Sphere sphere = new Sphere();
+
+            //Position and Radius
+            sphere.radius = sphereRadius.x + Random.value * (sphereRadius.y - sphereRadius.x);
+            Vector2 randomPos = Random.insideUnitCircle * spherePlacementRadius;
+            sphere.position = new Vector3(randomPos.x, sphere.radius, randomPos.y);
+
+            //Reject spheres that are intersecting others
+            foreach (Sphere other in spheres)
+            {
+                float minDist = sphere.radius + other.radius;
+
+                if (Vector3.SqrMagnitude(sphere.position - other.position) < minDist * minDist)
+                {
+                    goto SkipSphere;
+                }
+
+            }
+
+            //Albedo and Specular Color
+            Color color = Random.ColorHSV();
+            bool metal = Random.value < 0.5f;
+            sphere.albedo = metal ? Vector3.zero : new Vector3(color.r, color.g, color.b);
+            sphere.specular = metal ? new Vector3(color.g, color.g, color.b) : Vector3.one * 0.04f;
+
+            //Add the sphere to the list
+            spheres.Add(sphere);
+
+
+            SkipSphere:
+                continue;
+            
+        }
+
+        //Assign to the Compute Buffer
+        sphereBuffer = new ComputeBuffer(spheres.Count, 40);
+        sphereBuffer.SetData(spheres);
     }
 
     private void OnRenderImage(RenderTexture source, RenderTexture destination)
@@ -99,5 +179,7 @@ public class RayTracingMaster : MonoBehaviour
 
         Vector3 lightDir = DirectionalLight.transform.forward;
         RayTracingShader.SetVector("_DirectionalLight", new Vector4(lightDir.x, lightDir.y, lightDir.z, DirectionalLight.intensity));
+
+        RayTracingShader.SetBuffer(0, "_Spheres", sphereBuffer);
     }
 }
