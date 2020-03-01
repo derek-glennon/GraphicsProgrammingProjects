@@ -224,6 +224,7 @@ GameObject:
   - component: {fileID: 1803389762}
   - component: {fileID: 1803389765}
   - component: {fileID: 1803389766}
+  - component: {fileID: 1803389767}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -290,7 +291,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1803389761}
   m_LocalRotation: {x: 0.11829687, y: 0.41900265, z: -0.05516273, w: 0.8985542}
-  m_LocalPosition: {x: 0, y: 6, z: -4}
+  m_LocalPosition: {x: -131, y: 59, z: -113}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1973215381}
@@ -311,6 +312,9 @@ MonoBehaviour:
   RayTracingShader: {fileID: 7200000, guid: f45c587b9e0a49b4dbe7510c39c916bc, type: 3}
   SkyboxTexture: {fileID: 2800000, guid: 9f08ec4fdfde360419b194426cf861a7, type: 3}
   DirectionalLight: {fileID: 207125915}
+  sphereRadius: {x: 1, y: 8}
+  spheresMax: 100
+  spherePlacementRadius: 100
 --- !u!114 &1803389766
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -326,6 +330,23 @@ MonoBehaviour:
   minAngle: -10
   maxAngle: 40
   speed: 1
+--- !u!114 &1803389767
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1803389761}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c787abd9b5c6c68478fa0f4c5f09517e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  acceleration: 50
+  accSprintMultiplier: 4
+  lookSensitivity: 1
+  dampingCoefficient: 5
+  focusOnEnable: 1
 --- !u!1 &1973215379
 GameObject:
   m_ObjectHideFlags: 0

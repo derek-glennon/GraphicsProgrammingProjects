@@ -55,6 +55,7 @@ public class RayTracingMaster : MonoBehaviour
             currentSample = 0;
             DirectionalLight.transform.hasChanged = false;
         }
+
     }
 
     private void OnEnable()
