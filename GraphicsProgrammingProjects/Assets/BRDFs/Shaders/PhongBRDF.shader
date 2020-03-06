@@ -28,7 +28,7 @@
 		float _SpecularPower;
 		fixed4 _SpecularColor;
 
-		half4 LightingPhongBRDF(SurfaceOutput s, half3 lightDir, half3 viewDir, half atten)
+		half4 LightingPhongBRDF(SurfaceOutputBRDF s, half3 lightDir, half3 viewDir, half atten)
 		{
 			float3 normalDir = normalize(s.Normal);
 
@@ -57,7 +57,7 @@
         half _Metallic;
         fixed4 _Color;
 
-        void surf (Input IN, inout SurfaceOutput o)
+        void surf (Input IN, inout SurfaceOutputBRDF o)
         {
             fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
             o.Albedo = c.rgb;
