@@ -29,7 +29,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Floats:
     - _AlphaMultiplier: 5
-    - _ColorMultiplier: 1.5
+    - _ColorMultiplier: 1
     - _NoiseAmountBaseLayer: 1
     - _NoiseAmountLayer2: 1
     - _NoiseAmountLayer3: 1
