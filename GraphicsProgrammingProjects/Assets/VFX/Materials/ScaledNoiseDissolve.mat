@@ -30,9 +30,10 @@ Material:
     m_Floats:
     - _AlphaMultiplier: 5
     - _ColorMultiplier: 5
-    - _Cutoff: 0.1
-    - _DisAmount: 0
+    - _Cutoff: 0.237
+    - _DisAmount: -0.49
     - _DisplacementWidth: 0.716
+    - _DissolveColorWidth: 0.01
     - _HeightScale: 0
     - _NoiseAmountBaseLayer: 1
     - _NoiseAmountLayer2: 1
@@ -48,7 +49,7 @@ Material:
     - _Scale: 0.78
     - _ScaleMultiplierLayer2: 1
     - _ScaleMultiplierLayer3: 1
-    - _ScaleV: 0.1
+    - _ScaleV: 0.108
     - _ScrollSpeed: -18.73
     - _ScrollSpeedU: -5.46
     - _ScrollSpeedULayer2: 1
@@ -56,6 +57,7 @@ Material:
     - _ScrollSpeedV: 9.91
     - _ScrollSpeedVLayer2: 1
     - _ScrollSpeedVLayer3: 1
+    - _Smoothness: 0.475
     - _StepValue: 1
     - _StepValueLayer2: 1
     - _StepValueLayer3: 1
