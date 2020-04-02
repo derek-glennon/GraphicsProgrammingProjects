@@ -30,9 +30,14 @@ Material:
     m_Floats:
     - _AlphaMultiplier: 5
     - _ColorMultiplier: 5
+    - _Cutoff: 0.1
+    - _DisAmount: 0
+    - _DisplacementWidth: 0.716
+    - _HeightScale: 0
     - _NoiseAmountBaseLayer: 1
     - _NoiseAmountLayer2: 1
     - _NoiseAmountLayer3: 1
+    - _Offset: 0.7
     - _OffsetU: 0
     - _OffsetULayer2: 0
     - _OffsetULayer3: 0
@@ -43,6 +48,7 @@ Material:
     - _Scale: 0.78
     - _ScaleMultiplierLayer2: 1
     - _ScaleMultiplierLayer3: 1
+    - _ScaleV: 0.1
     - _ScrollSpeed: -18.73
     - _ScrollSpeedU: -5.46
     - _ScrollSpeedULayer2: 1

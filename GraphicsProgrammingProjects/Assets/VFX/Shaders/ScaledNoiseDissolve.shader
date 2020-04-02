@@ -2,6 +2,21 @@
 {
 	Properties
 	{
+		[Header(Dissolve)]
+		_DisAmount("Dissolve Amount", Range(-2,2)) = 0.0
+		_Cutoff("Cutoff", Range(0,1)) = 0.0
+		_DissolveColorWidth("Dissolve Color Width", Range(0,0.1)) = 0.01
+		_Smoothness("Cutoff Smoothness", Range(0,2)) = 0.05
+
+		[Space(5)]
+		[Header(Vertex Displacement)]
+		_DisplacementWidth("Displacement Segment Width", Range(0,1)) = 0.3
+		_HeightScale("Height Displacement Amount", Range(0,0.2)) = 0.0
+		_ScaleV("Displacement Scale", Range(0,1)) = 0.1
+		_Offset("Displacement Y Offset", Range(-1,1)) = 0.7
+
+		[Space(5)]
+		[Header(Multiplier)]
 		_AlphaMultiplier("Alpha Multiplier", float) = 5
 		_ColorMultiplier("Color Multiplier", float) = 5
 
@@ -22,23 +37,23 @@
 		_Scale("Scale", float) = 1
 		_StepValue("Step Value", Range(0,1)) = 1
 
-		[Header(Noise Layer 2)][Sapce(5)]
-		_NoiseAmountLayer2("Noise Amount", Range(0,1)) = 1
-		_StepValueLayer2("Step Value 2", Range(0,1)) = 1
-		_ScaleMultiplierLayer2("Scale Multiplier", float) = 1
-		_ScrollSpeedULayer2("Scroll Speed U", float) = 1
-		_ScrollSpeedVLayer2("Scroll Speed V", float) = 1
-		_OffsetULayer2("Offset U", float) = 0
-		_OffsetVLayer2("Offset V", float) = 0
+		//[Header(Noise Layer 2)][Space(5)]
+		//_NoiseAmountLayer2("Noise Amount", Range(0,1)) = 1
+		//_StepValueLayer2("Step Value 2", Range(0,1)) = 1
+		//_ScaleMultiplierLayer2("Scale Multiplier", float) = 1
+		//_ScrollSpeedULayer2("Scroll Speed U", float) = 1
+		//_ScrollSpeedVLayer2("Scroll Speed V", float) = 1
+		//_OffsetULayer2("Offset U", float) = 0
+		//_OffsetVLayer2("Offset V", float) = 0
 
-		[Header(Noise Layer 3)][Sapce(5)]
-		_NoiseAmountLayer3("Noise Amount", Range(0,1)) = 1
-		_StepValueLayer3("Step Value", Range(0,1)) = 1
-		_ScaleMultiplierLayer3("Scale Multiplier", float) = 1
-		_ScrollSpeedULayer3("Scroll Speed U", float) = 1
-		_ScrollSpeedVLayer3("Scroll Speed V", float) = 1
-		_OffsetULayer3("Offset U", float) = 0
-		_OffsetVLayer3("Offset V", float) = 0
+		//[Header(Noise Layer 3)][Space(5)]
+		//_NoiseAmountLayer3("Noise Amount", Range(0,1)) = 1
+		//_StepValueLayer3("Step Value", Range(0,1)) = 1
+		//_ScaleMultiplierLayer3("Scale Multiplier", float) = 1
+		//_ScrollSpeedULayer3("Scroll Speed U", float) = 1
+		//_ScrollSpeedVLayer3("Scroll Speed V", float) = 1
+		//_OffsetULayer3("Offset U", float) = 0
+		//_OffsetVLayer3("Offset V", float) = 0
 	}
 		SubShader
 		{
@@ -73,6 +88,19 @@
 				};
 
 
+				//Dissolve
+				float _DisAmount;
+				float _Cutoff;
+				float _DissolveColorWidth;
+				float _Smoothness;
+
+				//Vertex Displacement
+				float _DisplacementWidth;
+				float _HeightScale;
+				float _ScaleV;
+				float _Offset;
+
+				//Multipliers
 				float _AlphaMultiplier;
 				float _ColorMultiplier;
 
@@ -95,32 +123,39 @@
 				float _Scale;
 				float _StepValue;
 
-				//Noise Layer 2
-				float _NoiseAmountLayer2;
-				float _StepValueLayer2;
-				float _ScaleMultiplierLayer2;
-				float _ScrollSpeedULayer2;
-				float _ScrollSpeedVLayer2;
-				float _OffsetULayer2;
-				float _OffsetVLayer2;
+				////Noise Layer 2
+				//float _NoiseAmountLayer2;
+				//float _StepValueLayer2;
+				//float _ScaleMultiplierLayer2;
+				//float _ScrollSpeedULayer2;
+				//float _ScrollSpeedVLayer2;
+				//float _OffsetULayer2;
+				//float _OffsetVLayer2;
 
-				//Noise Layer 3
-				float _NoiseAmountLayer3;
-				float _StepValueLayer3;
-				float _ScaleMultiplierLayer3;
-				float _ScrollSpeedULayer3;
-				float _ScrollSpeedVLayer3;
-				float _OffsetULayer3;
-				float _OffsetVLayer3;
+				////Noise Layer 3
+				//float _NoiseAmountLayer3;
+				//float _StepValueLayer3;
+				//float _ScaleMultiplierLayer3;
+				//float _ScrollSpeedULayer3;
+				//float _ScrollSpeedVLayer3;
+				//float _OffsetULayer3;
+				//float _OffsetVLayer3;
 
 				v2f vert(appdata v)
 				{
 					v2f o;
 					o.worldPos = mul(unity_ObjectToWorld, v.vertex);
 					o.worldNormal = UnityObjectToWorldNormal(v.normal);
-					o.vertex = UnityObjectToClipPos(v.vertex);
 					o.uv = TRANSFORM_TEX(v.uv, _NoiseTex);
 					o.color = v.color;
+
+					o.vertex = UnityObjectToClipPos(v.vertex);
+
+					float dispPos = o.vertex.y + _DisAmount + _Offset;
+					float dispPosClamped = smoothstep(0, 0.15, dispPos) * smoothstep(dispPos, dispPos + 0.15, _DisplacementWidth);
+					v.vertex.y -= (dispPosClamped *_HeightScale);
+					v.vertex.xz += dispPosClamped * (_ScaleV* (v.normal.xz));
+					o.vertex = UnityObjectToClipPos(v.vertex);
 					return o;
 				}
 
@@ -138,8 +173,8 @@
 
 					//Adjust World Position
 					adjustedWorldPos.y += _Time.x * _ScrollSpeed;
-					adjustedWorldPosLayer2.y += (_Time.x * float2(_ScrollSpeedULayer3, _ScrollSpeedVLayer3) * i.color.g) * _ScaleMultiplierLayer3 * i.color.b;
-					adjustedWorldPosLayer3.y += (_Time.x * float2(_ScrollSpeedULayer2, _ScrollSpeedVLayer2) * i.color.g) * _ScaleMultiplierLayer2 * i.color.b;
+					//adjustedWorldPosLayer2.y += (_Time.x * float2(_ScrollSpeedULayer3, _ScrollSpeedVLayer3) * i.color.g) * _ScaleMultiplierLayer3 * i.color.b;
+					//adjustedWorldPosLayer3.y += (_Time.x * float2(_ScrollSpeedULayer2, _ScrollSpeedVLayer2) * i.color.g) * _ScaleMultiplierLayer2 * i.color.b;
 
 					//Triplanar Noise
 					float3 triplanarX = tex2D(_NoiseTex, adjustedWorldPos.zy * _Scale);
@@ -148,6 +183,21 @@
 					float3 triplanarNoise = triplanarZ;
 					triplanarNoise = lerp(triplanarNoise, triplanarX, blendNormal.x);
 					triplanarNoise = lerp(triplanarNoise, triplanarY, blendNormal.y);
+
+					float noise = triplanarNoise.r;
+
+					float movingPosOnModel = saturate(_DisAmount + i.vertex.y);
+					movingPosOnModel *= noise;
+					float mainTexturePart = smoothstep(0, _Smoothness, movingPosOnModel - _DissolveColorWidth);
+					mainTexturePart = step(_Cutoff, movingPosOnModel);
+
+					float glowingPart = smoothstep(0, _Smoothness, movingPosOnModel);
+					glowingPart = step(_Cutoff, glowingPart);
+					glowingPart *= (1 - mainTexturePart);
+
+					clip((mainTexturePart + glowingPart) - 0.01);
+
+					//clip(mainTexturePart - 0.01);
 
 					//fixed4 noiseTex = tex2D(_NoiseTex, UVBaseLayer);
 					//fixed4 noiseTexLayer2 = tex2D(_NoiseTex, UVLayer2);
@@ -183,7 +233,7 @@
 					//return col;
 
 					fixed4 col;
-					col.rgb = triplanarNoise;
+					col.rgb = lerp(float3(0, 0, 0), float3(1, 0, 0), glowingPart);
 					col.a = 1;
 					return col;
 				}
