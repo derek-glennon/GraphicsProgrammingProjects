@@ -7,7 +7,7 @@ public class SplineFollower : MonoBehaviour
 {
     [SerializeField]
     private Spline spline;
-    [SerializeField][Range(0,1)]
+    [SerializeField][Range(0,1)]    
     private float splinePercentage;
 
     // Update is called once per frame
