@@ -14,5 +14,6 @@ public class SplineFollower : MonoBehaviour
     void Update()
     {
         transform.position = spline.GetPosition(splinePercentage);
+        transform.LookAt(transform.position + spline.GetDirection(splinePercentage));
     }
 }

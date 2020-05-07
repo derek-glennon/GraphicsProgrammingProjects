@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: TestSphereShot
-  m_Shader: {fileID: 4800000, guid: 45fc3a17ed1ea3543b4884a398165c13, type: 3}
+  m_Shader: {fileID: 4800000, guid: 9be8f5eaf6e1e7540bd5e5b5b8fcb0a7, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -48,7 +48,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NoiseTex:
-        m_Texture: {fileID: 2800000, guid: cad2c77c608de6743af0fdc657ca0239, type: 3}
+        m_Texture: {fileID: 2800000, guid: 4e65ed2aebb569049abaef71ed880295, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
@@ -64,9 +64,9 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
-    - _AlphaMultiplier: 53.9
+    - _AlphaMultiplier: 3.53
     - _BumpScale: 1
-    - _ColorMultiplier: 7.73
+    - _ColorMultiplier: 3
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
@@ -87,12 +87,12 @@ Material:
     - _OffsetVLayer3: 0
     - _OuterStepValue: 0
     - _Parallax: 0.02
-    - _Scale: 0.56
-    - _ScaleMultiplierLayer2: 0.52
-    - _ScaleMultiplierLayer3: 0.56
-    - _ScrollSpeedU: 10
-    - _ScrollSpeedULayer2: 2
-    - _ScrollSpeedULayer3: 1
+    - _Scale: 1
+    - _ScaleMultiplierLayer2: 1.1
+    - _ScaleMultiplierLayer3: 0.15
+    - _ScrollSpeedU: 1
+    - _ScrollSpeedULayer2: 9.87
+    - _ScrollSpeedULayer3: 3.69
     - _ScrollSpeedV: 0
     - _ScrollSpeedVLayer2: 0
     - _ScrollSpeedVLayer3: 0
@@ -102,6 +102,7 @@ Material:
     - _StepValue: 1
     - _StepValueLayer2: 1
     - _StepValueLayer3: 1
+    - _TestVertexPosition: -0.89
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:
@@ -109,4 +110,6 @@ Material:
     - _Color1: {r: 1, g: 1, b: 1, a: 1}
     - _Color2: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _EndColor: {r: 0, g: 1, b: 0.91298866, a: 1}
     - _MainColor: {r: 1, g: 1, b: 1, a: 1}
+    - _StartColor: {r: 0.78061587, g: 0.9245283, b: 0.913241, a: 1}
